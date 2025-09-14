@@ -21,9 +21,7 @@ st.set_page_config(
 
 # Professional CSS styling
 st.markdown("""
-<style>
-    /* Professional background with subtle pattern */
-    .stApp {
+.stApp {
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         background-attachment: fixed;
     }
@@ -447,4 +445,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
