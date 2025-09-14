@@ -202,7 +202,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-DATA_URL=https://github.com/thrishi0610/medical-device-risk-app/releases/download/v1/final_merged_dataset.csv
+DATA_URL = 'https://github.com/thrishi0610/medical-device-risk-app/releases/download/v1/final_merged_dataset.csv'
 @st.cache_data
 def load_data():
     """Load the dataset for autocomplete suggestions"""
@@ -447,3 +447,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
