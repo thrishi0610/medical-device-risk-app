@@ -8,7 +8,7 @@ warnings.filterwarnings('ignore')
 
 # Page configuration
 st.set_page_config(
-    page_title="Medical Device Risk Assessment Platform v1",
+    page_title="Medical Device Risk Assessment Platform",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -434,4 +434,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
