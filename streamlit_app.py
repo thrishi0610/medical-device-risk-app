@@ -202,11 +202,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+DATA_URL=https://github.com/thrishi0610/medical-device-risk-app/releases/download/v1/final_merged_dataset.csv
 @st.cache_data
 def load_data():
     """Load the dataset for autocomplete suggestions"""
     try:
-        df = pd.read_csv("data csv/final_merged_dataset.csv", low_memory=False)
+        df = pd.read_csv(DATA_URL, low_memory=False)
         # Get unique device names and manufacturers
         device_names = df['name'].dropna().unique().tolist()
         manufacturers = df['name_manufacturer'].dropna().unique().tolist()
