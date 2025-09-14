@@ -227,12 +227,12 @@ def predict_risk(device_name, manufacturer_name, model, le_device, le_manuf):
         if device_name in le_device.classes_:
             device_code = le_device.transform([device_name])[0]
         else:
-            device_code = -1 # Unknown device
+            device_code = -1  # Unknown device
         
         if manufacturer_name in le_manuf.classes_:
             manuf_code = le_manuf.transform([manufacturer_name])[0]
         else:
-            manuf_code = -1 # Unknown manufacturer
+            manuf_code = -1  # Unknown manufacturer
         
         # Create sample for prediction
         sample = pd.DataFrame([[device_code, manuf_code]], 
@@ -277,4 +277,160 @@ def main():
     st.sidebar.markdown("""
     <div class="sidebar-header">
         <h2 style="color: white; margin: 0; text-align: center; font-size: 1.5rem;">Device Information</h2>
-        <p style="color: rgba
+        <p style="color: rgba(255, 255, 255, 0.9); margin: 0.5rem 0 0 0; text-align: center; font-size: 0.9rem;">
+            Enter device details for risk assessment
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Professional form inputs
+    device_name = st.sidebar.selectbox(
+        "Device Name",
+        options=[""] + sorted(device_names),
+        help="Select or type to search for a device name",
+        key="device_select"
+    )
+    
+    manufacturer_name = st.sidebar.selectbox(
+        "Manufacturer Name", 
+        options=[""] + sorted(manufacturers),
+        help="Select or type to search for a manufacturer",
+        key="manufacturer_select"
+    )
+    
+    # Professional assess button
+    predict_button = st.sidebar.button("Assess Risk Level", type="primary", use_container_width=True)
+    
+    # Professional information panel
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("""
+    <div class="info-card">
+        <h4 style="color: #1a365d; margin: 0 0 1rem 0; font-size: 1.1rem;">Platform Information</h4>
+        <ul style="color: #4a5568; font-size: 0.9rem; margin: 0; padding-left: 1.2rem; line-height: 1.6;">
+            <li>Start typing to search devices</li>
+            <li>Use exact manufacturer names</li>
+            <li>Analysis based on 34,744+ records</li>
+            <li>90% model accuracy</li>
+            <li>FDA-compliant risk assessment</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Main content area
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.header("Risk Assessment Results")
+        
+        if predict_button and device_name and manufacturer_name:
+            with st.spinner("Analyzing device risk level..."):
+                risk_level = predict_risk(device_name, manufacturer_name, model, le_device, le_manuf)
+            
+            if risk_level:
+                risk_info = get_risk_display(risk_level)
+                
+                # Professional risk result display
+                st.markdown(f"""
+                <div class="risk-{risk_info['color']}">
+                    <h2 style="margin: 0 0 1rem 0; font-size: 1.8rem;">{risk_info['icon']} {risk_info['label']}</h2>
+                    <div style="margin: 1rem 0;">
+                        <p style="margin: 0.5rem 0; font-size: 1.1rem;"><strong>Device:</strong> {device_name}</p>
+                        <p style="margin: 0.5rem 0; font-size: 1.1rem;"><strong>Manufacturer:</strong> {manufacturer_name}</p>
+                    </div>
+                    <p style="margin: 1rem 0 0 0; font-size: 1rem; opacity: 0.95;">{risk_info['description']}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Professional risk level indicator
+                st.markdown("### Risk Level Assessment")
+                
+                # Create a professional risk meter
+                risk_meter = st.progress(risk_level / 3)
+                st.markdown(f"""
+                <div style="text-align: center; margin: 1rem 0; padding: 1rem;
+                            background: #2b2b40; border-radius: 8px; border: 1px solid #333;">
+                    <p style="margin: 0; font-size: 1.1rem; color: #f5f5f5; font-weight: 600;">
+                        Risk Level: {risk_level}/3 ({risk_info['label']})
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+        elif predict_button:
+            st.warning("Please select both device name and manufacturer to assess risk level.")
+        else:
+            st.info("Enter device information in the sidebar and click 'Assess Risk Level' to begin analysis.")
+    
+    with col2:
+        st.header("Platform Statistics")
+        
+        # Professional statistics display
+        col2_1, col2_2 = st.columns(2)
+        
+        with col2_1:
+            st.markdown("""
+            <div class="metric-card">
+                <h3 style="color: #99aaff; margin: 0; font-size: 1rem;">Total Devices</h3>
+                <h2 style="color: #ffffff; margin: 0.5rem 0; font-size: 2rem;">{:,}</h2>
+            </div>
+            """.format(len(device_names)), unsafe_allow_html=True)
+            
+            st.markdown("""
+            <div class="metric-card">
+                <h3 style="color: #99aaff; margin: 0; font-size: 1rem;">Manufacturers</h3>
+                <h2 style="color: #ffffff; margin: 0.5rem 0; font-size: 2rem;">{:,}</h2>
+            </div>
+            """.format(len(manufacturers)), unsafe_allow_html=True)
+        
+        with col2_2:
+            st.markdown("""
+            <div class="metric-card">
+                <h3 style="color: #99aaff; margin: 0; font-size: 1rem;">Model Accuracy</h3>
+                <h2 style="color: #ffffff; margin: 0.5rem 0; font-size: 2rem;">90%</h2>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("""
+            <div class="metric-card">
+                <h3 style="color: #99aaff; margin: 0; font-size: 1rem;">Data Points</h3>
+                <h2 style="color: #ffffff; margin: 0.5rem 0; font-size: 2rem;">124,969</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Professional risk level distribution
+        st.markdown("### Risk Level Distribution")
+        st.markdown("""
+        <div class="info-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 0.75rem 0; padding: 0.5rem 0; border-bottom: 1px solid #444;">
+                <span style="color: #dc2626; font-weight: 600;">High Risk</span>
+                <span style="font-weight: 700; color: #f5f5f5;">17.2%</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 0.75rem 0; padding: 0.5rem 0; border-bottom: 1px solid #444;">
+                <span style="color: #d97706; font-weight: 600;">Medium Risk</span>
+                <span style="font-weight: 700; color: #f5f5f5;">75.9%</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 0.75rem 0; padding: 0.5rem 0;">
+                <span style="color: #059669; font-weight: 600;">Low Risk</span>
+                <span style="font-weight: 700; color: #f5f5f5;">6.9%</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Professional footer
+    st.markdown("""
+    <div class="footer">
+        <h4 style="color: #f5f5f5; margin: 0 0 1rem 0; font-size: 1.2rem;">Medical Device Risk Assessment Platform</h4>
+        <p style="color: #c0c0c0; margin: 0.5rem 0; font-weight: 600; font-size: 1rem;">Powered by Advanced XGBoost Machine Learning</p>
+        <p style="color: #888; margin: 0; font-size: 0.9rem; line-height: 1.6;">
+            This platform provides comprehensive risk assessments based on historical device data and manufacturer information.<br>
+            <strong>Disclaimer:</strong> Always consult with qualified medical professionals for critical device safety decisions.
+        </p>
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #444;">
+            <p style="color: #888; margin: 0; font-size: 0.8rem;">
+                © 2024 Medical Device Risk Assessment Platform | Version 2.0 | FDA Compliant
+            </p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+if __name__ == "__main__":
+    main()
