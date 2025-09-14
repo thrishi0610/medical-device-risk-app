@@ -159,4 +159,122 @@ st.markdown("""
         background: #2b2b40;
         border-radius: 8px;
         padding: 2rem;
-        margin: 2rem
+        margin: 2rem 0;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        border: 1px solid #333;
+        color: #c0c0c0;
+    }
+    
+    /* Dark sidebar header */
+    .sidebar-header {
+        background: #2563eb;
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+    }
+    
+    /* Dark info card */
+    .info-card {
+        background: #2b2b40;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        border: 1px solid #333;
+        color: #c0c0c0;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+DATA_URL = 'https://github.com/thrishi0610/medical-device-risk-app/releases/download/v1/final_merged_dataset.csv'
+@st.cache_data
+def load_data():
+    """Load the dataset for autocomplete suggestions"""
+    try:
+        df = pd.read_csv(DATA_URL, low_memory=False)
+        # Get unique device names and manufacturers
+        device_names = df['name'].dropna().unique().tolist()
+        manufacturers = df['name_manufacturer'].dropna().unique().tolist()
+        return device_names, manufacturers
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        return [], []
+
+@st.cache_resource
+def load_model_and_encoders():
+    """Load the trained model and label encoders"""
+    try:
+        # Load the balanced 2-feature model (properly balanced predictions)
+        model = XGBClassifier()
+        model.load_model("xgbModel_balanced_2feat.model")
+        
+        # Load balanced label encoders
+        le_device = joblib.load("le_device_balanced.pkl")
+        le_manuf = joblib.load("le_manuf_balanced.pkl")
+        
+        return model, le_device, le_manuf
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None, None, None
+
+def predict_risk(device_name, manufacturer_name, model, le_device, le_manuf):
+    """Predict risk level for given device and manufacturer"""
+    try:
+        # Encode inputs
+        if device_name in le_device.classes_:
+            device_code = le_device.transform([device_name])[0]
+        else:
+            device_code = -1 # Unknown device
+        
+        if manufacturer_name in le_manuf.classes_:
+            manuf_code = le_manuf.transform([manufacturer_name])[0]
+        else:
+            manuf_code = -1 # Unknown manufacturer
+        
+        # Create sample for prediction
+        sample = pd.DataFrame([[device_code, manuf_code]], 
+                              columns=['name', 'name_manufacturer'])
+        
+        # Predict
+        pred_encoded = model.predict(sample)[0]
+        
+        # Map back to original labels (0→1, 1→2, 2→3)
+        risk_mapping = {0: 1, 1: 2, 2: 3}
+        risk_level = risk_mapping[pred_encoded]
+        
+        return risk_level
+    except Exception as e:
+        st.error(f"Error in prediction: {e}")
+        return None
+
+def get_risk_display(risk_level):
+    """Get risk level display information"""
+    risk_info = {
+        1: {"label": "HIGH RISK", "color": "red", "icon": "🔴", "description": "High risk devices require immediate attention and careful monitoring."},
+        2: {"label": "MEDIUM RISK", "color": "orange", "icon": "🟡", "description": "Medium risk devices should be monitored regularly."},
+        3: {"label": "LOW RISK", "color": "green", "icon": "🟢", "description": "Low risk devices have minimal safety concerns."}
+    }
+    return risk_info.get(risk_level, {"label": "UNKNOWN", "color": "gray", "icon": "❓", "description": "Risk level could not be determined."})
+
+def main():
+    # Professional Header
+    st.markdown('<h1 class="main-header">Medical Device Risk Assessment Platform</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header">Advanced AI-powered risk analysis for medical device safety and compliance</p>', unsafe_allow_html=True)
+    
+    # Load data and model
+    with st.spinner("Loading data and model..."):
+        device_names, manufacturers = load_data()
+        model, le_device, le_manuf = load_model_and_encoders()
+    
+    if not device_names or not manufacturers or model is None:
+        st.error("Failed to load required data or model. Please ensure all files are present.")
+        return
+    
+    # Professional Sidebar Header
+    st.sidebar.markdown("""
+    <div class="sidebar-header">
+        <h2 style="color: white; margin: 0; text-align: center; font-size: 1.5rem;">Device Information</h2>
+        <p style="color: rgba
